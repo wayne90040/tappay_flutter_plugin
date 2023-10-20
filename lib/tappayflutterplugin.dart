@@ -25,6 +25,12 @@ enum TPDMethod {
   preparePaymentData,
   requestPaymentData,
   getGooglePayPrime,
+  setupMerchant,
+  setupConsumer,
+  setupCart,
+  addCartItem,
+  canMakeApplePayments,
+  startApplePay
 }
 
 extension TPDMethodExtension on TPDMethod {
@@ -62,6 +68,18 @@ extension TPDMethodExtension on TPDMethod {
         return "requestPaymentData";
       case TPDMethod.getGooglePayPrime:
         return "getGooglePayPrime";
+      case TPDMethod.setupMerchant:
+        return "setupMerchant";
+      case TPDMethod.setupConsumer:
+        return "setupConsumer";
+      case TPDMethod.setupCart:
+        return "setupCart";
+      case TPDMethod.addCartItem:
+        return "addCartItem";
+      case TPDMethod.canMakeApplePayments:
+        return "canMakeApplePayments";
+      case TPDMethod.startApplePay:
+        return "startApplePay";
     }
   }
 }
@@ -425,4 +443,62 @@ class Tappayflutterplugin {
   /// Get google pay prime
   static Future<void> getGooglePayPrime() async =>
       await _channel.invokeMethod(TPDMethod.getGooglePayPrime.name);
+
+  /// Setup Apple Pay Merchant
+  static Future<void> setupMerchant({
+    required String merchantName,
+    required String applePayMerchantIdentifier,
+    required String countryCode,
+    required String currencyCode,
+  }) async =>
+      await _channel.invokeMethod(
+        TPDMethod.setupMerchant.name,
+        {
+          'merchantName': merchantName,
+          'applePayMerchantIdentifier': applePayMerchantIdentifier,
+          'countryCode': countryCode,
+          'currencyCode': currencyCode,
+        },
+      );
+
+  /// Setup Apple Pay Consumer
+  static Future<void> setupConsumer() async => await _channel.invokeMethod(
+        TPDMethod.setupConsumer.name,
+        {},
+      );
+
+  /// Setup Apple Pay Cart
+  static Future<void> setupCart() async => await _channel.invokeMethod(
+        TPDMethod.setupCart.name,
+        {
+          'isAmountPending': true,
+          'isShowTotalAmount': false,
+        },
+      );
+
+  /// Add Item to Cart when use Apple Pay
+  static Future<void> addCartItem({
+    required String itemName,
+    required String withAmount,
+  }) async =>
+      await _channel.invokeMethod(
+        TPDMethod.addCartItem.name,
+        {
+          'itemName': itemName,
+          'withAmount': withAmount,
+        },
+      );
+
+  /// Can use apple pay
+  static Future<bool> canMakeApplePayments() async =>
+      await _channel.invokeMethod(
+        TPDMethod.canMakeApplePayments.name,
+        {},
+      );
+
+  /// Start Apple pay
+  static Future<void> startApplePay() async => await _channel.invokeMethod(
+        TPDMethod.startApplePay.name,
+        {},
+      );
 }

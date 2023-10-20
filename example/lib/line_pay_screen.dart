@@ -33,7 +33,7 @@ class _LinePayScreenState extends State<LinePayScreen> {
               color: Colors.blue,
               child: MaterialButton(
                 onPressed: () {
-                  Tappayflutterplugin.setupTappay(
+                  Tappayflutterplugin.setupTapPay(
                       appId: appId,
                       appKey: appKey,
                       serverType: TapPayServerType.sandBox,
