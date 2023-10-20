@@ -26,7 +26,7 @@ class _LinePayScreenState extends State<LinePayScreen> {
               textAlign: TextAlign.center,
             ),
             Text(
-              'serverType: ${serverType == TappayServerType.sandBox ? 'sandBox' : 'production'}',
+              'serverType: ${serverType == TapPayServerType.sandBox ? 'sandBox' : 'production'}',
               textAlign: TextAlign.center,
             ),
             Container(
@@ -36,7 +36,7 @@ class _LinePayScreenState extends State<LinePayScreen> {
                   Tappayflutterplugin.setupTappay(
                       appId: appId,
                       appKey: appKey,
-                      serverType: TappayServerType.sandBox,
+                      serverType: TapPayServerType.sandBox,
                       errorMessage: (error) {
                         print(error);
                       });

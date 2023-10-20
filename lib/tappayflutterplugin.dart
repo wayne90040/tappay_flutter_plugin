@@ -1,23 +1,81 @@
 import 'dart:async';
 import 'dart:convert';
-
 import 'package:flutter/services.dart';
 
-enum TappayServerType {
-  sandBox,
-  production,
-}
+enum TapPayServerType { sandBox, production }
 
 enum TPDCardType { unknown, visa, masterCard, jcb, americanExpress, unionPay }
 
 enum TPDCardAuthMethod { panOnly, cryptogram3ds }
+
+enum TPDMethod {
+  setupTappay,
+  isCardValid,
+  getPrime,
+  isEasyWalletAvailable,
+  getEasyWalletPrime,
+  redirectToEasyWallet,
+  parseToEasyWalletResult,
+  getEasyWalletResult,
+  isLinePayAvailable,
+  getLinePayPrime,
+  redirectToLinePay,
+  parseToLinePayResult,
+  getLinePayResult,
+  preparePaymentData,
+  requestPaymentData,
+  getGooglePayPrime,
+}
+
+extension TPDMethodExtension on TPDMethod {
+  String get name {
+    switch (this) {
+      case TPDMethod.setupTappay:
+        return "setupTappay";
+      case TPDMethod.isCardValid:
+        return "isCardValid";
+      case TPDMethod.getPrime:
+        return "getPrime";
+      case TPDMethod.isEasyWalletAvailable:
+        return "isEasyWalletAvailable";
+      case TPDMethod.getEasyWalletPrime:
+        return "getEasyWalletPrime";
+      case TPDMethod.redirectToEasyWallet:
+        return "redirectToEasyWallet";
+      case TPDMethod.parseToEasyWalletResult:
+        return "parseToEasyWalletResult";
+      case TPDMethod.getEasyWalletResult:
+        return "getEasyWalletResult";
+      case TPDMethod.isLinePayAvailable:
+        return "isLinePayAvailable";
+      case TPDMethod.getLinePayPrime:
+        return "getLinePayPrime";
+      case TPDMethod.redirectToLinePay:
+        return "redirectToLinePay";
+      case TPDMethod.parseToLinePayResult:
+        return "parseToLinePayResult";
+      case TPDMethod.getLinePayResult:
+        return "getLinePayResult";
+      case TPDMethod.preparePaymentData:
+        return "preparePaymentData";
+      case TPDMethod.requestPaymentData:
+        return "requestPaymentData";
+      case TPDMethod.getGooglePayPrime:
+        return "getGooglePayPrime";
+    }
+  }
+}
 
 class PrimeModel {
   String? status;
   String? message;
   String? prime;
 
-  PrimeModel({this.status, this.message, this.prime});
+  PrimeModel({
+    this.status,
+    this.message,
+    this.prime,
+  });
 
   PrimeModel.fromJson(Map<String, dynamic> json) {
     status = json['status'];
@@ -40,8 +98,12 @@ class TPDEasyWalletResult {
   String? orderNumber;
   String? bankTransactionId;
 
-  TPDEasyWalletResult(
-      {this.status, this.recTradeId, this.orderNumber, this.bankTransactionId});
+  TPDEasyWalletResult({
+    this.status,
+    this.recTradeId,
+    this.orderNumber,
+    this.bankTransactionId,
+  });
 
   TPDEasyWalletResult.fromJson(Map<String, dynamic> json) {
     status = json['status'];
@@ -66,8 +128,12 @@ class TPDLinePayResult {
   String? orderNumber;
   String? bankTransactionId;
 
-  TPDLinePayResult(
-      {this.status, this.recTradeId, this.orderNumber, this.bankTransactionId});
+  TPDLinePayResult({
+    this.status,
+    this.recTradeId,
+    this.orderNumber,
+    this.bankTransactionId,
+  });
 
   TPDLinePayResult.fromJson(Map<String, dynamic> json) {
     status = json['status'];
@@ -90,30 +156,28 @@ class Tappayflutterplugin {
   static const MethodChannel _channel =
       const MethodChannel('tappayflutterplugin');
 
-  static Future<String> get platformVersion async {
-    final String version = await _channel.invokeMethod('getPlatformVersion');
-    return version;
-  }
+  static Future<String> get platformVersion async =>
+      await _channel.invokeMethod('getPlatformVersion');
 
-  //設置Tappay環境
-  static Future<void> setupTappay({
+  /// 設置Tappay環境
+  static Future<void> setupTapPay({
     required int appId,
     required String appKey,
-    required TappayServerType serverType,
+    required TapPayServerType serverType,
     required Function(String) errorMessage,
   }) async {
     String st = '';
     switch (serverType) {
-      case TappayServerType.sandBox:
+      case TapPayServerType.sandBox:
         st = 'sandBox';
         break;
-      case TappayServerType.production:
+      case TapPayServerType.production:
         st = 'production';
         break;
     }
 
     final String? error = await _channel.invokeMethod(
-      'setupTappay',
+      TPDMethod.setupTappay.name,
       {
         'appId': appId,
         'appKey': appKey,
@@ -126,7 +190,7 @@ class Tappayflutterplugin {
     }
   }
 
-  //檢查信用卡的有效性
+  /// 檢查信用卡的有效性
   static Future<bool> isCardValid({
     required String cardNumber,
     required String dueMonth,
@@ -134,7 +198,7 @@ class Tappayflutterplugin {
     required String ccv,
   }) async {
     final bool isValid = await _channel.invokeMethod(
-      'isCardValid',
+      TPDMethod.isCardValid.name,
       {
         'cardNumber': cardNumber,
         'dueMonth': dueMonth,
@@ -145,7 +209,7 @@ class Tappayflutterplugin {
     return isValid;
   }
 
-  //取得Prime
+  /// 取得Prime
   static Future<PrimeModel> getPrime({
     required String cardNumber,
     required String dueMonth,
@@ -153,7 +217,7 @@ class Tappayflutterplugin {
     required String ccv,
   }) async {
     String response = await _channel.invokeMethod(
-      'getPrime',
+      TPDMethod.getPrime.name,
       {
         'cardNumber': cardNumber,
         'dueMonth': dueMonth,
@@ -165,27 +229,33 @@ class Tappayflutterplugin {
     return PrimeModel.fromJson(json.decode(response));
   }
 
-  //檢查是否有安裝Easy wallet
-  static Future<bool> isEasyWalletAvailable() async {
-    bool response = await _channel.invokeMethod('isEasyWalletAvailable', {});
-    return response;
-  }
+  /// 檢查是否有安裝 Easy Wallet
+  static Future<bool> isEasyWalletAvailable() async =>
+      await _channel.invokeMethod(
+        TPDMethod.isEasyWalletAvailable.name,
+        {},
+      );
 
-  //取得Easy wallet prime
-  static Future<PrimeModel> getEasyWalletPrime(
-      {required String universalLink}) async {
+  /// 取得 Easy Wallet Prime
+  static Future<PrimeModel> getEasyWalletPrime({
+    required String universalLink,
+  }) async {
     String response = await _channel.invokeMethod(
-      'getEasyWalletPrime',
-      {'universalLink': universalLink},
+      TPDMethod.getEasyWalletPrime.name,
+      {
+        'universalLink': universalLink,
+      },
     );
     return PrimeModel.fromJson(json.decode(response));
   }
 
-  //重導向至EasyWallet
-  static Future<TPDEasyWalletResult> redirectToEasyWallet(
-      {required String universalLink, required String paymentUrl}) async {
+  /// 重導向至 Easy Wallet
+  static Future<TPDEasyWalletResult> redirectToEasyWallet({
+    required String universalLink,
+    required String paymentUrl,
+  }) async {
     String result = await _channel.invokeMethod(
-      'redirectToEasyWallet',
+      TPDMethod.redirectToEasyWallet.name,
       {
         'universalLink': universalLink,
         'paymentUrl': paymentUrl,
@@ -194,55 +264,57 @@ class Tappayflutterplugin {
     return TPDEasyWalletResult.fromJson(json.decode(result));
   }
 
-  //解析Easy wallet result
-  static Future<void> parseToEasyWalletResult(
-      {required String universalLink, required String uri}) async {
-    await _channel.invokeMethod(
-      'parseToEasyWalletResult',
-      {
-        'universalLink': universalLink,
-        'uri': uri,
-      },
-    );
-    return;
-  }
+  /// 解析 Easy Wallet Result
+  static Future<void> parseToEasyWalletResult({
+    required String universalLink,
+    required String uri,
+  }) async =>
+      await _channel.invokeMethod(
+        TPDMethod.parseToEasyWalletResult.name,
+        {
+          'universalLink': universalLink,
+          'uri': uri,
+        },
+      );
 
-  //取得Easy wallet result
+  /// 取得Easy wallet result
   static Future<TPDEasyWalletResult?> getEasyWalletResult() async {
     String result = await _channel.invokeMethod(
-      'getEasyWalletResult',
+      TPDMethod.getEasyWalletResult.name,
     );
-
     try {
       return TPDEasyWalletResult.fromJson(json.decode(result));
     } catch (e) {
-      print(e);
-      print(result);
       return null;
     }
   }
 
-  //檢查是否有安裝LinePay
-  static Future<bool> isLinePayAvailable() async {
-    var response = await _channel.invokeMethod('isLinePayAvailable', {});
-    return response;
-  }
+  /// 檢查是否有安裝 Line Pay
+  static Future<bool> isLinePayAvailable() async => await _channel.invokeMethod(
+        TPDMethod.isLinePayAvailable.name,
+        {},
+      );
 
-  //取得Line pay prime
-  static Future<PrimeModel> getLinePayPrime(
-      {required String universalLink}) async {
+  /// 取得Line pay prime
+  static Future<PrimeModel> getLinePayPrime({
+    required String universalLink,
+  }) async {
     String response = await _channel.invokeMethod(
-      'getLinePayPrime',
-      {'universalLink': universalLink},
+      TPDMethod.getLinePayPrime.name,
+      {
+        'universalLink': universalLink,
+      },
     );
     return PrimeModel.fromJson(json.decode(response));
   }
 
-  //重導向至LinePay
-  static Future<TPDLinePayResult> redirectToLinePay(
-      {required String universalLink, required String paymentUrl}) async {
+  /// 重導向至LinePay
+  static Future<TPDLinePayResult> redirectToLinePay({
+    required String universalLink,
+    required String paymentUrl,
+  }) async {
     String result = await _channel.invokeMethod(
-      'redirectToLinePay',
+      TPDMethod.redirectToLinePay.name,
       {
         'universalLink': universalLink,
         'paymentUrl': paymentUrl,
@@ -251,35 +323,32 @@ class Tappayflutterplugin {
     return TPDLinePayResult.fromJson(json.decode(result));
   }
 
-  //解析line pay result
-  static Future<void> parseToLinePayResult(
-      {required String universalLink, required String uri}) async {
-    await _channel.invokeMethod(
-      'parseToLinePayResult',
-      {
-        'universalLink': universalLink,
-        'uri': uri,
-      },
-    );
-    return;
-  }
+  /// 解析line pay result
+  static Future<void> parseToLinePayResult({
+    required String universalLink,
+    required String uri,
+  }) async =>
+      await _channel.invokeMethod(
+        TPDMethod.parseToLinePayResult.name,
+        {
+          'universalLink': universalLink,
+          'uri': uri,
+        },
+      );
 
-  //取得line pay result
+  /// 取得line pay result
   static Future<TPDLinePayResult?> getLinePayResult() async {
     String result = await _channel.invokeMethod(
-      'getLinePayResult',
+      TPDMethod.getLinePayResult.name,
     );
-
     try {
       return TPDLinePayResult.fromJson(json.decode(result));
     } catch (e) {
-      print(e);
-      print(result);
       return null;
     }
   }
 
-  //GooglePay prepare payment data
+  /// GooglePay prepare payment data
   static Future<void> preparePaymentData({
     required List<TPDCardType> allowedNetworks,
     required List<TPDCardAuthMethod> allowedAuthMethods,
@@ -313,7 +382,6 @@ class Tappayflutterplugin {
       }
       networks.add(value);
     }
-
     List<int> methods = [];
     for (var i in allowedAuthMethods) {
       int value;
@@ -329,7 +397,7 @@ class Tappayflutterplugin {
     }
 
     await _channel.invokeMethod(
-      'preparePaymentData',
+      TPDMethod.preparePaymentData.name,
       {
         'allowedNetworks': networks,
         'allowedAuthMethods': methods,
@@ -339,23 +407,22 @@ class Tappayflutterplugin {
         'isEmailRequired': isEmailRequired,
       },
     );
-    return;
   }
 
-  //request google pay payment data
+  /// request google pay payment data
   static Future<void> requestPaymentData(
-      String totalPrice, String currencyCode) async {
-    await _channel.invokeMethod(
-      'requestPaymentData',
-      {
-        'totalPrice': totalPrice,
-        'currencyCode': currencyCode,
-      },
-    );
-  }
+    String totalPrice,
+    String currencyCode,
+  ) async =>
+      await _channel.invokeMethod(
+        TPDMethod.requestPaymentData.name,
+        {
+          'totalPrice': totalPrice,
+          'currencyCode': currencyCode,
+        },
+      );
 
-  //Get google pay prime
-  static Future<void> getGooglePayPrime() async {
-    await _channel.invokeMethod('getGooglePayPrime');
-  }
+  /// Get google pay prime
+  static Future<void> getGooglePayPrime() async =>
+      await _channel.invokeMethod(TPDMethod.getGooglePayPrime.name);
 }

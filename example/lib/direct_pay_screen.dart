@@ -33,7 +33,7 @@ class _DirectPayScreenState extends State<DirectPayScreen> {
               textAlign: TextAlign.center,
             ),
             Text(
-              'serverType: ${serverType == TappayServerType.sandBox ? 'sandBox' : 'production'}',
+              'serverType: ${serverType == TapPayServerType.sandBox ? 'sandBox' : 'production'}',
               textAlign: TextAlign.center,
             ),
             Container(
@@ -43,7 +43,7 @@ class _DirectPayScreenState extends State<DirectPayScreen> {
                   Tappayflutterplugin.setupTappay(
                       appId: appId,
                       appKey: appKey,
-                      serverType: TappayServerType.sandBox,
+                      serverType: TapPayServerType.sandBox,
                       errorMessage: (error) {
                         print(error);
                       });
